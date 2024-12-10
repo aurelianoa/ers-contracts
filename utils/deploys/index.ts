@@ -11,16 +11,16 @@ import {
   ERSRegistry__factory,
   ManufacturerRegistry__factory,
   ServicesRegistry__factory
-} from "../../typechain/factories/contracts";
+} from "../../typechain-types/factories/contracts";
 
 import {
   BaseProjectRegistrar__factory,
   PBTSimpleProjectRegistrar__factory
-} from "../../typechain/factories/contracts/project-registrars";
-import { DeveloperNameGovernor__factory } from "../../typechain/factories/contracts/governance";
-import { SECP256k1Model__factory } from "../../typechain/factories/contracts/auth-models/chip";
-import { EnrollmentSECP256k1Model__factory } from "../../typechain/factories/contracts/auth-models/enrollment";
-import { EnrollmentEIP191Model__factory } from "../../typechain/factories/contracts/auth-models/enrollment";
+} from "../../typechain-types/factories/contracts/project-registrars";
+import { DeveloperNameGovernor__factory } from "../../typechain-types/factories/contracts/governance";
+import { SECP256k1Model__factory } from "../../typechain-types/factories/contracts/auth-models/chip";
+import { EnrollmentSECP256k1Model__factory } from "../../typechain-types/factories/contracts/auth-models/enrollment";
+import { EnrollmentEIP191Model__factory } from "../../typechain-types/factories/contracts/auth-models/enrollment";
 import {
   BaseProjectRegistrar,
   ChipRegistry,

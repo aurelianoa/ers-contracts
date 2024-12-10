@@ -12,7 +12,7 @@ import {
   DeveloperRegistrarMock__factory,
   DeveloperRegistryMock__factory,
   PBTSimpleMock__factory
-} from "../../typechain/factories/contracts/mocks";
+} from "../../typechain-types/factories/contracts/mocks";
 
 import {
   AccountMock,

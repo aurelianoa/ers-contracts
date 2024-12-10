@@ -23,4 +23,4 @@ export {
   EnrollmentEIP191Model,
   ServicesRegistry,
   TransferPolicyMock
-} from "../../typechain";
+} from "../../typechain-types";

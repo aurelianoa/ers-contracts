@@ -1,6 +1,6 @@
 import { BigNumber, Signer } from "ethers";
 
-import { PBTSimple__factory } from "../../typechain/factories/contracts/token";
+import { PBTSimple__factory } from "../../typechain-types/factories/contracts/token";
 
 import { PBTSimple } from "../contracts";
 
@@ -18,13 +18,13 @@ export default class DeployTokens {
     baseTokenURI: string,
     transferPolicy: string
   ): Promise<PBTSimple> {
-    const PBTSimple = await new PBTSimple__factory(this._deployerSigner).deploy(
+    const PBTSimpleResult = await new PBTSimple__factory(this._deployerSigner).deploy(
       name,
       symbol,
       baseTokenURI,
       maxBlockWindow,
       transferPolicy
     );
-    return PBTSimple;
+    return PBTSimpleResult;
   }
 }

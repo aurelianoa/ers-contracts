@@ -11,6 +11,7 @@
 /transpiled
 /types/generated/*
 /typechain
+/typechain-types
 coverage.json
 coverage/
 .env

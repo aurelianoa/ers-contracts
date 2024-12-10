@@ -14,7 +14,7 @@ export class Blockchain {
     const response = await this.sendJSONRpcRequestAsync("evm_snapshot", []);
 
     this._snapshotId = response;
-    return response;
+    return response as Promise<string>;
   }
 
   public async revertAsync(): Promise<void> {
