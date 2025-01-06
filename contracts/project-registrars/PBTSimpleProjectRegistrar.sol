@@ -12,6 +12,9 @@ import { IDeveloperRegistrar } from "../interfaces/IDeveloperRegistrar.sol";
 import { PBTSimple } from "../token/PBTSimple.sol";
 import { IPBT } from "../token/IPBT.sol";
 import { ITransferPolicy } from "../interfaces/ITransferPolicy.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Ownable2Step } from "@openzeppelin/contracts/access/Ownable2Step.sol";
+import { OwnableUnset } from "@erc725/smart-contracts/contracts/custom/OwnableUnset.sol";
 
 /**
  * @title BaseProjectRegistrar
@@ -46,11 +49,11 @@ contract PBTSimpleProjectRegistrar is BaseProjectRegistrar, PBTSimple {
         IDeveloperRegistrar _developerRegistrar,
         string memory _name,
         string memory _symbol,
-        string memory _baseURI,
+        address _owner,
         uint256 _maxBlockWindow,
         ITransferPolicy _transferPolicy
     ) 
-        PBTSimple(_name, _symbol, _baseURI, _maxBlockWindow, _transferPolicy)
+        PBTSimple(_name, _symbol, _owner, _maxBlockWindow, _transferPolicy)
         BaseProjectRegistrar(
             _chipRegistry,
             _ers,
@@ -73,19 +76,7 @@ contract PBTSimpleProjectRegistrar is BaseProjectRegistrar, PBTSimple {
         _setTransferPolicy(_newPolicy);
     }
 
-    /**
-     * @notice ONLY OWNER: Allows the contract owner to update the base URI for the PBT tokens.
-     *
-     * @param updatedBaseURI The new base URI to set for the tokens.
-     */
-    function setBaseURI(
-        string memory updatedBaseURI
-    ) 
-        public 
-        onlyOwner() 
-    {
-        baseURI = updatedBaseURI;
-    }
+
 
     /* ============ External Functions ============ */
 
@@ -98,24 +89,29 @@ contract PBTSimpleProjectRegistrar is BaseProjectRegistrar, PBTSimple {
      * @param signatureFromChip     Signature of keccak256(msg.sender, blockhash(blockNumberUsedInSig), _payload) signed by chip
      *                              being transferred
      * @param blockNumberUsedInSig  Block number used in signature
-     * @param useSafeTransferFrom   Indicates whether to use safeTransferFrom or transferFrom
      * @param payload               Encoded payload containing data required to execute transfer. Data structure will be dependent
      *                              on implementation of TransferPolicy
+     * @dev                         compatible with LSP8 Standard
+     * @param _force                When set to `true`, `to` may be any address. When set to `false`, `to` must be a contract that 
+     *                              supports the LSP1 standard.
+     * @param data                  Additional data the caller wants included in the emitted event, and sent in the hooks 
+     *                              to `from` and `to` addresses.
      */
     function transferToken(
         address to,
         address chipId,
         bytes calldata signatureFromChip,
         uint256 blockNumberUsedInSig,
-        bool useSafeTransferFrom,
-        bytes calldata payload
+        bytes calldata payload,
+        bool _force,
+        bytes memory data
     ) 
         public
-        override(PBTSimple)
-        returns (uint256 tokenId)
+        override
+        returns (bytes32 tokenId)
     {
         // Validations happen in PBTSimple / TransferPolicy
-        PBTSimple.transferToken(to, chipId,  signatureFromChip, blockNumberUsedInSig, useSafeTransferFrom, payload);
+        PBTSimple.transferToken(to, chipId,  signatureFromChip, blockNumberUsedInSig, payload, _force, data);
         chipRegistry.setChipNodeOwner(chipId, to);
         return tokenIdFor(chipId);
     }
@@ -143,7 +139,9 @@ contract PBTSimpleProjectRegistrar is BaseProjectRegistrar, PBTSimple {
             _mint(
                 chip.chipOwner,
                 chip.chipId,
-                chip.nameHash
+                chip.nameHash,
+                false,
+                ""
             );
         }
     }
@@ -162,6 +160,24 @@ contract PBTSimpleProjectRegistrar is BaseProjectRegistrar, PBTSimple {
             _interfaceId == type(IProjectRegistrar).interfaceId ||
             _interfaceId == type(IPBT).interfaceId ||
             super.supportsInterface(_interfaceId);
+    }
+
+    ///overrides
+    function owner() public view override(Ownable, OwnableUnset)  returns (address) {
+        return Ownable.owner();
+    }
+    function transferOwnership(address newOwner) public override(Ownable2Step, OwnableUnset) onlyOwner {
+        Ownable.transferOwnership(newOwner);
+    }
+    function renounceOwnership() public override(Ownable, OwnableUnset) onlyOwner {
+        Ownable.renounceOwnership();
+    }
+    function _checkOwner() internal view override(Ownable, OwnableUnset) {
+        Ownable._checkOwner();
+    }
+    modifier onlyOwner() override(Ownable, OwnableUnset) {
+        require(owner() == msg.sender, "Ownable: caller is not the owner");
+        _;
     }
 }
 

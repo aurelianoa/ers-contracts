@@ -5,12 +5,13 @@ pragma solidity ^0.8.24;
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 import { IERC165, ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import { IERC721Metadata } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import { 
+    LSP8IdentifiableDigitalAsset
+} from "@lukso/lsp8-contracts/contracts/LSP8IdentifiableDigitalAsset.sol";
 import { SignatureChecker } from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 
 import { ChipValidations } from "../lib/ChipValidations.sol";
-import { ERC721ReadOnly } from "./ERC721ReadOnly.sol";
+import { LSP8ReadOnly } from "./LSP8ReadOnly.sol";
 import { IPBT } from "./IPBT.sol";
 import { ITransferPolicy } from "../interfaces/ITransferPolicy.sol";
 
@@ -21,7 +22,7 @@ import { ITransferPolicy } from "../interfaces/ITransferPolicy.sol";
  * @notice Implementation of PBT where tokenIds are assigned to chip addresses as the chips are added. The contract has a
  * transfer policy, which can be set by the chip owner and allows the owner to specify how the chip can be transferred to another party. 
  */
-contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
+contract PBTSimple is IPBT, ERC165, LSP8ReadOnly {
     using SignatureChecker for address;
     using ChipValidations for address;
     using ECDSA for bytes;
@@ -35,7 +36,7 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
     /* ============ Modifiers ============ */
 
     modifier onlyChipOwner(address _chipId) {
-        require(ownerOf(tokenIdFor(_chipId)) == msg.sender, "Caller must be chip owner");
+        require(tokenOwnerOf(tokenIdFor(_chipId)) == msg.sender, "Caller must be chip owner");
         _;
     }
 
@@ -45,11 +46,10 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
     }
     
     /* ============ State Variables ============ */
-    string public baseURI;                                       // Base URI for the token
     uint256 public immutable maxBlockWindow;                     // Amount of blocks from commitBlock after which chip signatures are expired
     ITransferPolicy public transferPolicy;                       // Transfer policy for the PBT
-    mapping(address=>uint256) public chipIdToTokenId;            // Maps chipId to tokenId
-    mapping(uint256=>address) public tokenIdToChipId;            // Maps tokenId to chipId
+    mapping(address=>bytes32) public chipIdToTokenId;            // Maps chipId to tokenId
+    mapping(bytes32=>address) public tokenIdToChipId;            // Maps tokenId to chipId
     /* ============ Constructor ============ */
 
     /**
@@ -62,14 +62,12 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
     constructor(
         string memory _name,
         string memory _symbol,
-        string memory _baseTokenURI,
+        address _onwer,
         uint256 _maxBlockWindow,
         ITransferPolicy _transferPolicy
     )
-        ERC721ReadOnly(_name, _symbol)
+        LSP8ReadOnly(_name, _symbol, _onwer)
     {
-        // _baseURI is inherited from ERC721Metadata
-        baseURI = _baseTokenURI;
         maxBlockWindow = _maxBlockWindow;
         transferPolicy = _transferPolicy;
     }
@@ -85,25 +83,30 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
      * @param signatureFromChip     Signature of keccak256(msg.sender, blockhash(blockNumberUsedInSig), _payload) signed by chip
      *                              being transferred
      * @param blockNumberUsedInSig  Block number used in signature
-     * @param useSafeTransfer       Indicates whether to use safeTransferFrom or transferFrom
      * @param payload               Encoded payload containing data required to execute transfer. Data structure will be dependent
      *                              on implementation of TransferPolicy
+     * @dev                         compatible with LSP8 Standard
+     * @param _force                When set to `true`, `to` may be any address. When set to `false`, `to` must be a contract that 
+     *                              supports the LSP1 standard.
+     * @param data                  Additional data the caller wants included in the emitted event, and sent in the hooks 
+     *                              to `from` and `to` addresses.
      */
     function transferToken(
         address to,
         address chipId,
         bytes calldata signatureFromChip,
         uint256 blockNumberUsedInSig,
-        bool useSafeTransfer,
-        bytes calldata payload
+        bytes calldata payload,
+        bool _force,
+        bytes memory data
     ) 
         public
         virtual
         onlyMintedChip(chipId)
-        returns (uint256 tokenId)
+        returns (bytes32 tokenId)
     {
         // ChipInfo memory chipInfo = chipTable[chipId];
-        address chipOwner = ownerOf(tokenIdFor(chipId));
+        address chipOwner = tokenOwnerOf(tokenIdFor(chipId));
 
         // Check that the signature is valid, create own scope to prevent stack-too-deep error
         {
@@ -111,7 +114,7 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
             require(chipId.isValidSignatureNow(signedHash, signatureFromChip), "Invalid signature");
         }
 
-        _transferPBT(to, chipOwner, tokenIdFor(chipId), useSafeTransfer);
+        _transferPBT(to, chipOwner, tokenIdFor(chipId), _force, data);
 
         // Validation of the payload beyond ensuring it was signed by the chip is left up to the TransferPolicy contract.
         //authorizeTransfer(address _chipId, address _sender, address _chipOwner, bytes _payload, bytes _signature)
@@ -138,7 +141,7 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
      * @param _signature    The signature to check
      * @return bool         If the signature is valid, false otherwise
      */
-    function isChipSignatureForToken(uint256 _tokenId, bytes calldata _payload, bytes calldata _signature)
+    function isChipSignatureForToken(bytes32 _tokenId, bytes calldata _payload, bytes calldata _signature)
         public
         view
         returns (bool)
@@ -149,24 +152,13 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
     }
 
     /**
-     * @dev Returns the tokenURI for a given chipId. Chip must have been claimed / token minted.
-     *
-     * @param _chipId      The tokenId to get the tokenURI for
-     * @return string       The tokenURI for the given tokenId
-     */
-    function tokenURI(address _chipId) public view virtual onlyMintedChip(_chipId) returns (string memory) {
-        uint256 _tokenId = tokenIdFor(_chipId);
-        return tokenURI(_tokenId);
-    }
-
-    /**
      * @dev Returns the tokenId for a given chipId
      *
      * @param _chipId       The chipId to get the tokenId for
      * @return tokenId      The tokenId for the given chipId
      */
-    function tokenIdFor(address _chipId) public view returns (uint256 tokenId) {
-        require(chipIdToTokenId[_chipId] != 0, "Chip must be minted");
+    function tokenIdFor(address _chipId) public view returns (bytes32 tokenId) {
+        require(chipIdToTokenId[_chipId] != 0x0, "Chip must be minted");
         return chipIdToTokenId[_chipId];
     }
 
@@ -178,7 +170,7 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
         public
         view
         virtual
-        override(ERC721, ERC165)
+        override(LSP8IdentifiableDigitalAsset, ERC165)
         returns (bool)
     {
         return _interfaceId == 
@@ -187,15 +179,6 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
     }
 
     /* ============ Internal Functions ============ */
-
-    /**
-     * @dev Returns the base URI for the token. This is used to generate the tokenURI for a given tokenId.
-     *
-     * @return string       The base URI for the token
-     */
-    function _baseURI() internal view override returns (string memory) {
-        return baseURI;
-    }
 
     /**
      * @dev Sets the transfer policy for PBTSimple.
@@ -226,14 +209,16 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
     function _mint(
         address _to,
         address _chipId,
-        bytes32 _ersNode
+        bytes32 _ersNode,
+        bool _force,
+        bytes memory data
     )
         internal
         virtual
-        returns(uint256)
+        returns(bytes32)
     {
-        uint256 tokenId = uint256(_ersNode);
-        _mint(_to, tokenId);
+        bytes32 tokenId = _ersNode;
+        _mint(_to, tokenId, _force, data);
 
         chipIdToTokenId[_chipId] = tokenId;
         tokenIdToChipId[tokenId] = _chipId;
@@ -263,14 +248,20 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
      *
      * @param _from                 Address of owner transferring PBT
      * @param _tokenId              ID of PBT being transferred
-     * @param _useSafeTransfer      Indicates whether to use safeTransferFrom or transferFrom
+     * @dev                         compatible with LSP8 Standard
+     * @param _force                When set to `true`, `to` may be any address. When set to `false`, `to` must be 
+     *                              a contract that supports the LSP1 standard.
+     * @param data                  Additional data the caller wants included in the emitted event, and sent in 
+     *                              the hooks to `from` and `to` addresses.
      */
-    function _transferPBT(address to, address _from, uint256 _tokenId, bool _useSafeTransfer) internal {
-        if (_useSafeTransfer) {
-            _safeTransfer(_from, to, _tokenId, "");
-        } else {
-            _transfer(_from, to, _tokenId);
-        }
+    function _transferPBT(
+        address to,
+        address _from,
+        bytes32 _tokenId,
+        bool _force,
+        bytes memory data
+    ) internal {
+        _transfer(_from, to, _tokenId, _force, data);
     }
 
     /**
@@ -281,6 +272,6 @@ contract PBTSimple is IPBT, ERC165, ERC721ReadOnly {
      */
     function _exists(address _chipId) internal view returns (bool) {
         // TODO: review this logic closely; ERC721.sol will revert if the tokenId doen't exist
-        return chipIdToTokenId[_chipId] != 0;
+        return chipIdToTokenId[_chipId] != 0x0;
     }
 }

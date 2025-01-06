@@ -7,16 +7,18 @@ import { IPBT } from "../token/IPBT.sol";
 import { ITransferPolicy } from "../interfaces/ITransferPolicy.sol";
 
 contract PBTSimpleMock is PBTSimple {
-    constructor(string memory _name, string memory _symbol, string memory _baseURI, uint256 maxBlockWindow, ITransferPolicy _transferPolicy) 
-        PBTSimple(_name, _symbol, _baseURI, maxBlockWindow, _transferPolicy)
+    constructor(string memory _name, string memory _symbol, address _owner, uint256 maxBlockWindow, ITransferPolicy _transferPolicy) 
+        PBTSimple(_name, _symbol, _owner, maxBlockWindow, _transferPolicy)
     {}
 
     function testMint(
         address _to,
         address _chipId,
-        bytes32 _ersNode
+        bytes32 _ersNode,
+        bool _force,
+        bytes memory _data
     ) external {
-        _mint(_to, _chipId, _ersNode);
+        _mint(_to, _chipId, _ersNode, _force, _data);
     }
 
     function setTransferPolicy(
