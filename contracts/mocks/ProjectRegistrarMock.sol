@@ -10,9 +10,6 @@ import { IPBT } from "../token/IPBT.sol";
 import { IProjectRegistrar } from "../interfaces/IProjectRegistrar.sol";
 import { ITransferPolicy } from "../interfaces/ITransferPolicy.sol";
 import { PBTSimpleMock } from "./PBTSimpleMock.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { Ownable2Step } from "@openzeppelin/contracts/access/Ownable2Step.sol";
-import { OwnableUnset } from "@erc725/smart-contracts/contracts/custom/OwnableUnset.sol";
 
 contract ProjectRegistrarMock is BaseProjectRegistrar, PBTSimpleMock {
 
@@ -74,23 +71,5 @@ contract ProjectRegistrarMock is BaseProjectRegistrar, PBTSimpleMock {
             _interfaceId == type(IProjectRegistrar).interfaceId ||
             _interfaceId == type(IPBT).interfaceId ||
             super.supportsInterface(_interfaceId);
-    }
-
-    ///overrides
-    function owner() public view override(Ownable, OwnableUnset)  returns (address) {
-        return Ownable.owner();
-    }
-    function transferOwnership(address newOwner) public override(Ownable2Step, OwnableUnset) onlyOwner {
-        Ownable.transferOwnership(newOwner);
-    }
-    function renounceOwnership() public override(Ownable, OwnableUnset) onlyOwner {
-        Ownable.renounceOwnership();
-    }
-    function _checkOwner() internal view override(Ownable, OwnableUnset) {
-        Ownable._checkOwner();
-    }
-    modifier onlyOwner() override(Ownable, OwnableUnset) {
-        require(owner() == msg.sender, "Ownable: caller is not the owner");
-        _;
     }
 }

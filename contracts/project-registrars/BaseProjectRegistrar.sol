@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.24;
 
-import { Ownable2Step } from "@openzeppelin/contracts/access/Ownable2Step.sol";
+import { Ownable2Step } from "../custom/Ownable2Step.sol";
 
 import { ChipValidations } from "../lib/ChipValidations.sol";
 import { IChipRegistry } from "../interfaces/IChipRegistry.sol";
