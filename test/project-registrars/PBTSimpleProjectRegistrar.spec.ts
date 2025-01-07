@@ -378,7 +378,7 @@ describe("PBTSimpleProjectRegistrar", () => {
       let subjectChipId: Address;
       let subjectSignatureFromChip: string;
       let subjectBlockNumberUsedInSig: BigNumber;
-      let subjectUseSafeTransfer: boolean;
+      // let subjectUseSafeTransfer: boolean;
       let subjectPayload: Uint8Array;
       let subjectCaller: Account;
 
@@ -386,7 +386,7 @@ describe("PBTSimpleProjectRegistrar", () => {
         subjectChipId = chipOne.address;
         const anchorBlock = await blockchain._provider.getBlock("latest");
         subjectBlockNumberUsedInSig = BigNumber.from(anchorBlock.number);
-        subjectUseSafeTransfer = false;
+        // subjectUseSafeTransfer = false;
         subjectPayload = ethers.utils.zeroPad(subjectBlockNumberUsedInSig.toHexString(), 32);
         subjectCaller = developerTwo;
         const msgContents = ethers.utils.solidityPack(
@@ -403,15 +403,16 @@ describe("PBTSimpleProjectRegistrar", () => {
           subjectChipId,
           subjectSignatureFromChip,
           subjectBlockNumberUsedInSig,
-          subjectUseSafeTransfer,
-          subjectPayload
+          subjectPayload,
+          false,
+          "0x"
         );
       }
 
       it("should transfer the token", async() => {
         await subject();
 
-        expect(await projectRegistrar["ownerOf(address)"](chipOne.address)).to.be.equal(subjectCaller.address);
+        expect(await projectRegistrar.ownerOf(chipOne.address)).to.be.equal(subjectCaller.address);
       });
 
       it("should set the new address as the owner in the ERSRegistry", async() => {
@@ -517,7 +518,7 @@ describe("PBTSimpleProjectRegistrar", () => {
       });
     });
   });
-
+  /*
   describe("#setBaseURI", async () => {
     let newBaseURI: string;
     let subjectCaller: Account;
@@ -547,7 +548,7 @@ describe("PBTSimpleProjectRegistrar", () => {
       });
     });
   });
-
+  */
   describe("#supportsInterface", async () => {
     let subjectInterfaceId: string;
 

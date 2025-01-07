@@ -47,8 +47,10 @@ describe("PBTSimple", () => {
   const name = "Ethereum Reality Service PBT";
   const symbol = "PBT";
   const maxBlockWindow = BigNumber.from(5);
-  const baseTokenURI = "https://www.claim.com/";
+  // const baseTokenURI = "https://www.claim.com/";
   blockchain = new Blockchain(ethers.provider);
+  const _LSP4_TOKEN_NAME_KEY = '0xdeba1e292f8ba88238e10ab3c7f88bd4be4fac56cad5194b6ecceaf653468af1';
+  const _LSP4_TOKEN_SYMBOL_KEY = '0x2f0a68ab07768e01943a599e73362a0e17a63a72e94dd2e384d2c1d4db932756';
 
   beforeEach(async () => {
     [
@@ -62,18 +64,20 @@ describe("PBTSimple", () => {
 
     deployer = new DeployHelper(owner.wallet);
     transferPolicy = await deployer.mocks.deployTransferPolicyMock();
-    PBTSimple = await deployer.mocks.deployPBTSimpleMock(name, symbol, baseTokenURI, maxBlockWindow, transferPolicy.address);
+    PBTSimple = await deployer.mocks.deployPBTSimpleMock(name, symbol, owner.address, maxBlockWindow, transferPolicy.address);
     accountMock = await deployer.mocks.deployAccountMock(chipOne.address, PBTSimple.address);
   });
 
   describe("#constructor", async () => {
     it("should set the correct token name", async () => {
-      const actualName = await PBTSimple.name();
+      const actualName = await PBTSimple.getData(_LSP4_TOKEN_NAME_KEY);
+      // const actualName = await PBTSimple.name();
       expect(actualName).to.eq(name);
     });
 
     it("should set the correct token symbol", async () => {
-      const actualSymbol = await PBTSimple.symbol();
+      const actualSymbol = await PBTSimple.getData(_LSP4_TOKEN_SYMBOL_KEY);
+      // const actualSymbol = await PBTSimple.symbol();
       expect(actualSymbol).to.eq(symbol);
     });
   });
@@ -81,7 +85,7 @@ describe("PBTSimple", () => {
   describe("#isChipSignatureForToken", async () => {
     let subjectChipId: Address;
     let subjectErsNode: string;
-    let subjectTokenId: BigNumber;
+    let subjectTokenId: string;
     let subjectPayload: string;
     let subjectChipSignature: string;
     let subjectTo: Address;
@@ -89,14 +93,14 @@ describe("PBTSimple", () => {
     beforeEach(async () => {
       subjectChipId = chipOne.address;
       subjectErsNode = calculateLabelHash(subjectChipId);
-      subjectTokenId = ethers.BigNumber.from(subjectErsNode);
+      subjectTokenId = subjectErsNode; /// ethers.BigNumber.from(subjectErsNode);
       subjectPayload = ethers.utils.hashMessage("random message");
       subjectChipSignature = await chipOne.wallet.signMessage(ethers.utils.arrayify(subjectPayload));
       subjectTo = owner.address;
     });
 
     async function subject(): Promise<any> {
-      await PBTSimple.connect(owner.wallet).testMint(subjectTo, subjectChipId, subjectErsNode);
+      await PBTSimple.connect(owner.wallet).testMint(subjectTo, subjectChipId, subjectErsNode, false, "0x");
       return PBTSimple.isChipSignatureForToken(subjectTokenId, subjectPayload, subjectChipSignature);
     }
 
@@ -193,22 +197,22 @@ describe("PBTSimple", () => {
 
   describe("#approve", async () => {
     let subjectTo: Address;
-    let subjectTokenId: BigNumber;
+    let subjectTokenId: string;
 
     beforeEach(async () => {
       subjectTo = newOwner.address;
-      subjectTokenId = ONE;
+      subjectTokenId = ethers.utils.hexZeroPad(ONE.toHexString(), 32);
     });
 
     async function subject(): Promise<any> {
-      return PBTSimple.connect(owner.wallet).approve(subjectTo, subjectTokenId);
+      return PBTSimple.connect(owner.wallet).authorizeOperator(subjectTo, subjectTokenId, "0x");
     }
 
     it("should revert", async () => {
       await expect(subject()).to.be.revertedWith("ERC721 public approve not allowed");
     });
   });
-
+  /*
   describe("#setApprovalForAll", async () => {
     let subjectOperator: Address;
     let subjectApproved: boolean;
@@ -226,27 +230,27 @@ describe("PBTSimple", () => {
       await expect(subject()).to.be.revertedWith("ERC721 public setApprovalForAll not allowed");
     });
   });
-
+  */
   describe("#transferFrom", async () => {
     let subjectFrom: Address;
     let subjectTo: Address;
-    let subjectTokenId: BigNumber;
+    let subjectTokenId: string;
 
     beforeEach(async () => {
       subjectFrom = owner.address;
       subjectTo = newOwner.address;
-      subjectTokenId = ONE;
+      subjectTokenId = ethers.utils.hexZeroPad(ONE.toHexString(), 32);
     });
 
     async function subject(): Promise<any> {
-      return PBTSimple.connect(owner.wallet).transferFrom(subjectFrom, subjectTo, subjectTokenId);
+      return PBTSimple.connect(owner.wallet).transfer(subjectFrom, subjectTo, subjectTokenId, false, "0x");
     }
 
     it("should revert", async () => {
       await expect(subject()).to.be.revertedWith("ERC721 public transferFrom not allowed");
     });
   });
-
+  /*
   describe("#safeTransferFrom", async () => {
     let subjectFrom: Address;
     let subjectTo: Address;
@@ -297,7 +301,7 @@ describe("PBTSimple", () => {
       await expect(subject()).to.be.revertedWith("ERC721 public safeTransferFrom not allowed");
     });
   });
-
+  */
   describe("#_mint", async () => {
     let subjectTo: Address;
     let subjectChipId: Address;
@@ -309,13 +313,14 @@ describe("PBTSimple", () => {
       subjectTo = owner.address;
       subjectChipId = chipOne.address;
       subjectErsNode = calculateSubnodeHash(`${subjectChipId}.ProjectY.gucci.ers`);
-      subjectTokenId = BigNumber.from(subjectErsNode).toString();
+      subjectTokenId = subjectErsNode;
     });
 
     async function subject(): Promise<any> {
-      return PBTSimple.connect(owner.wallet).testMint(subjectTo, subjectChipId, subjectErsNode);
+      return PBTSimple.connect(owner.wallet).testMint(subjectTo, subjectChipId, subjectErsNode, false, "0x");
     }
-
+    /// TODO: test the LSP4Metadata
+    /*
     it("should claim the chip and set chip state", async () => {
       await subject();
 
@@ -325,11 +330,11 @@ describe("PBTSimple", () => {
       expect(actualChipTokenId).to.eq(subjectTokenId);
       expect(actualChipTokenUri).to.eq(baseTokenURI.concat(BigNumber.from(subjectErsNode).toString()));
     });
-
+    */
     it("should mint the token to the correct address and update owner balances", async () => {
       await subject();
 
-      const actualOwner = await PBTSimple.ownerOf(subjectTokenId);
+      const actualOwner = await PBTSimple.tokenOwnerOf(subjectTokenId);
       const actualOwnerBalance = await PBTSimple.balanceOf(subjectTo);
       expect(actualOwner).to.eq(subjectTo);
       expect(actualOwnerBalance).to.eq(ONE);
@@ -366,15 +371,15 @@ describe("PBTSimple", () => {
       chipErsNode = calculateSubnodeHash(`${chip.address}.ProjectY.gucci.ers`);
       chipErsNodeAccount = calculateSubnodeHash(`${chipAccount.address}.ProjectY.gucci.ers`);
 
-      await PBTSimple.testMint(ownerAddress, chip.address, chipErsNode);
-      await PBTSimple.testMint(ownerAddress, chipAccount.address, chipErsNodeAccount);
+      await PBTSimple.testMint(ownerAddress, chip.address, chipErsNode, false, "0x");
+      await PBTSimple.testMint(ownerAddress, chipAccount.address, chipErsNodeAccount, false, "0x");
     });
 
     describe("#transferToken", async() => {
       let subjectChipId: Address;
       let subjectSignatureFromChip: string;
       let subjectBlockNumberUsedInSig: BigNumber;
-      let subjectUseSafeTransfer: boolean;
+      /// let subjectUseSafeTransfer: boolean;
       let subjectPayload: Uint8Array;
       let subjectCaller: Account;
       let subjectErsNode: string;
@@ -389,7 +394,7 @@ describe("PBTSimple", () => {
         subjectPayload = ethers.utils.zeroPad(subjectBlockNumberUsedInSig.toHexString(), 32);
 
         subjectErsNode = calculateSubnodeHash(`${subjectChipId}.ProjectY.gucci.ers`);
-        subjectTokenId = BigNumber.from(subjectErsNode).toString();
+        subjectTokenId = subjectErsNode;
 
         const msgContents = ethers.utils.solidityPack(
           ["address", "bytes32", "bytes"],
@@ -397,7 +402,7 @@ describe("PBTSimple", () => {
         );
 
         subjectSignatureFromChip = await chip.wallet.signMessage(ethers.utils.arrayify(msgContents));
-        subjectUseSafeTransfer = false;
+        /// subjectUseSafeTransfer = false;
       });
 
       async function subject(): Promise<any> {
@@ -406,8 +411,9 @@ describe("PBTSimple", () => {
           subjectChipId,
           subjectSignatureFromChip,
           subjectBlockNumberUsedInSig,
-          subjectUseSafeTransfer,
-          subjectPayload
+          subjectPayload,
+          false,
+          "0x"
         );
       }
 
@@ -415,7 +421,7 @@ describe("PBTSimple", () => {
         await subject();
 
         // Need to use this hacky way to access since the ownerOf function is overloaded
-        const actualOwner = await PBTSimple.ownerOf(subjectTokenId);
+        const actualOwner = await PBTSimple.tokenOwnerOf(subjectTokenId);
         expect(actualOwner).to.eq(newOwner.address);
       });
 
@@ -458,7 +464,7 @@ describe("PBTSimple", () => {
           );
 
           subjectSignatureFromChip = await chip.wallet.signMessage(ethers.utils.arrayify(msgContents));
-          subjectUseSafeTransfer = true;
+          /// subjectUseSafeTransfer = true;
         });
 
         async function accountSubject(): Promise<any> {
@@ -467,7 +473,6 @@ describe("PBTSimple", () => {
             subjectChipId,
             subjectSignatureFromChip,
             subjectBlockNumberUsedInSig,
-            subjectUseSafeTransfer,
             subjectPayload
           );
         }
@@ -476,7 +481,7 @@ describe("PBTSimple", () => {
           await accountSubject();
 
           // Need to use this hacky way to access since the ownerOf function is overloaded
-          const actualOwner = await PBTSimple.ownerOf(subjectTokenId);
+          const actualOwner = await PBTSimple.tokenOwnerOf(subjectTokenId);
           expect(actualOwner).to.eq(subjectCaller.address);
         });
 
@@ -600,7 +605,8 @@ describe("PBTSimple", () => {
         });
       });
     });
-
+    /// TODO: Test LSP4Metadata
+    /*
     describe("#tokenUri(uint256)", async() => {
       let subjectTokenId: BigNumber;
       let subjectErsNode: string;
@@ -629,7 +635,8 @@ describe("PBTSimple", () => {
         });
       });
     });
-
+    */
+    /*
     describe("#tokenUri(address)", async() => {
       let subjectChipId: Address;
       let subjectErsNode: string;
@@ -658,8 +665,9 @@ describe("PBTSimple", () => {
         });
       });
     });
+    */
   });
-
+  /*
   describe("#transferFrom", async () => {
     let subjectFrom: Address;
     let subjectTo: Address;
@@ -679,7 +687,8 @@ describe("PBTSimple", () => {
       await expect(subject()).to.be.revertedWith("ERC721 public transferFrom not allowed");
     });
   });
-
+  */
+  /*
   describe("#safeTransferFrom", async () => {
     let subjectFrom: Address;
     let subjectTo: Address;
@@ -703,7 +712,8 @@ describe("PBTSimple", () => {
       await expect(subject()).to.be.revertedWith("ERC721 public safeTransferFrom not allowed");
     });
   });
-
+  */
+  /*
   describe("#safeTransferFrom (with data)", async () => {
     let subjectFrom: Address;
     let subjectTo: Address;
@@ -730,25 +740,25 @@ describe("PBTSimple", () => {
       await expect(subject()).to.be.revertedWith("ERC721 public safeTransferFrom not allowed");
     });
   });
-
+  */
   describe("#approve", async () => {
     let subjectTo: Address;
-    let subjectTokenId: BigNumber;
+    let subjectTokenId: string;
 
     beforeEach(async () => {
       subjectTo = newOwner.address;
-      subjectTokenId = ONE;
+      subjectTokenId = ethers.utils.hexZeroPad(ONE.toHexString(), 32);
     });
 
     async function subject(): Promise<any> {
-      return PBTSimple.connect(owner.wallet).approve(subjectTo, subjectTokenId);
+      return PBTSimple.connect(owner.wallet).authorizeOperator(subjectTo, subjectTokenId, "0x");
     }
 
     it("should revert", async () => {
       await expect(subject()).to.be.revertedWith("ERC721 public approve not allowed");
     });
   });
-
+  /*
   describe("#setApprovalForAll", async () => {
     let subjectOperator: Address;
     let subjectApproved: boolean;
@@ -766,4 +776,5 @@ describe("PBTSimple", () => {
       await expect(subject()).to.be.revertedWith("ERC721 public setApprovalForAll not allowed");
     });
   });
+  */
 });

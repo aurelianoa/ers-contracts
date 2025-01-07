@@ -32,7 +32,7 @@ contract AccountMock is IERC1271 {
     )
         external
     {
-        chipRegistry.transferToken(to, chipId, signatureFromChip, blockNumberUsedInSig, payload, true, "");
+        chipRegistry.transferToken(to, chipId, signatureFromChip, blockNumberUsedInSig, payload, false, "");
     }
 
     function isValidSignature(bytes32 _hash, bytes memory _signature) external view override returns (bytes4) {

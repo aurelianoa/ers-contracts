@@ -68,7 +68,7 @@ contract PBTSimpleProjectRegistrar is BaseProjectRegistrar, PBTSimple {
         ITransferPolicy _newPolicy
     )
         public
-        onlyOwner()
+        onlyOwnerERS()
     {
         _setTransferPolicy(_newPolicy);
     }
@@ -122,7 +122,7 @@ contract PBTSimpleProjectRegistrar is BaseProjectRegistrar, PBTSimple {
         ProjectChipAddition[] calldata _chips
     ) 
         external
-        onlyOwner()
+        onlyOwnerERS()
     {
         for (uint256 i = 0; i < _chips.length; i++) {
             ProjectChipAddition memory chip = _chips[i];
