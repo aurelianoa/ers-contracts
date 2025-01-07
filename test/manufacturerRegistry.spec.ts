@@ -17,7 +17,7 @@ import {
 
 import { createManufacturerCertificate } from "@utils/protocolUtils";
 import { calculateEnrollmentId } from "@utils/index";
-import { EnrollmentSECP256k1Model } from "@typechain/index";
+import { EnrollmentSECP256k1Model } from "typechain-types/index";
 
 const expect = getWaffleExpect();
 
