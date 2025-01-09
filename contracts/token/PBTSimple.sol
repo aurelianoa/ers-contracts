@@ -8,6 +8,9 @@ import { IERC165, ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC
 import { 
     LSP8IdentifiableDigitalAsset
 } from "@lukso/lsp8-contracts/contracts/LSP8IdentifiableDigitalAsset.sol";
+import {
+    ILSP8IdentifiableDigitalAsset
+} from "@lukso/lsp8-contracts/contracts/ILSP8IdentifiableDigitalAsset.sol";
 import { SignatureChecker } from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 
 import { ChipValidations } from "../lib/ChipValidations.sol";
@@ -175,7 +178,9 @@ contract PBTSimple is IPBT, ERC165, LSP8ReadOnly {
     {
         return _interfaceId == 
             type(IPBT).interfaceId ||
-            super.supportsInterface(_interfaceId);
+            _interfaceId ==
+            type(ILSP8IdentifiableDigitalAsset).interfaceId ||
+            ERC165.supportsInterface(_interfaceId);
     }
 
     /* ============ Internal Functions ============ */

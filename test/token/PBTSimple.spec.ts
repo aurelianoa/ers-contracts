@@ -1,6 +1,7 @@
 import "module-alias/register";
 
-import { ethers, network } from "hardhat";
+import { ethers } from "hardhat";
+/// import { network } from "hardhat";
 import { BigNumber } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address"; // eslint-disable-line
 
@@ -72,13 +73,15 @@ describe("PBTSimple", () => {
     it("should set the correct token name", async () => {
       const actualName = await PBTSimple.getData(_LSP4_TOKEN_NAME_KEY);
       // const actualName = await PBTSimple.name();
-      expect(actualName).to.eq(name);
+      const convertedName = ethers.utils.toUtf8String(actualName);
+      expect(convertedName).to.eq(name);
     });
 
     it("should set the correct token symbol", async () => {
       const actualSymbol = await PBTSimple.getData(_LSP4_TOKEN_SYMBOL_KEY);
       // const actualSymbol = await PBTSimple.symbol();
-      expect(actualSymbol).to.eq(symbol);
+      const convertedSymbol = ethers.utils.toUtf8String(actualSymbol);
+      expect(convertedSymbol).to.eq(symbol);
     });
   });
 
@@ -100,7 +103,7 @@ describe("PBTSimple", () => {
     });
 
     async function subject(): Promise<any> {
-      await PBTSimple.connect(owner.wallet).testMint(subjectTo, subjectChipId, subjectErsNode, false, "0x");
+      await PBTSimple.connect(owner.wallet).testMint(subjectTo, subjectChipId, subjectErsNode, true, "0x");
       return PBTSimple.isChipSignatureForToken(subjectTokenId, subjectPayload, subjectChipSignature);
     }
 
@@ -133,19 +136,19 @@ describe("PBTSimple", () => {
   });
 
   describe("#supportsInterface", async () => {
-    let interfaceIdMock: InterfaceIdGetterMock;
+    let interfaceIdMock: InterfaceIdGetterMock & { getLSP8InterfaceId: () => Promise<string> };
     let subjectInterfaceId: string;
 
     beforeEach(async () => {
       interfaceIdMock = await deployer.mocks.deployInterfaceIdGetterMock();
-      subjectInterfaceId = await interfaceIdMock.getERC721InterfaceId();
+      subjectInterfaceId = await interfaceIdMock.getLSP8InterfaceId();
     });
 
     async function subject(): Promise<any> {
       return PBTSimple.supportsInterface(subjectInterfaceId);
     }
 
-    it("should return true for ERC721 interface", async () => {
+    it("should return true for LSP8 interface", async () => {
       const actualResult = await subject();
       expect(actualResult).to.be.true;
     });
@@ -160,7 +163,7 @@ describe("PBTSimple", () => {
         expect(actualResult).to.be.true;
       });
     });
-
+    /*
     describe("when the interface is IERC721Metadata", async () => {
       beforeEach(async () => {
         subjectInterfaceId = await interfaceIdMock.getERC721MetadataInterfaceId();
@@ -171,7 +174,7 @@ describe("PBTSimple", () => {
         expect(actualResult).to.be.true;
       });
     });
-
+    */
     describe("when the interface is IPBT", async () => {
       beforeEach(async () => {
         subjectInterfaceId = await interfaceIdMock.getPBTInterfaceId();
@@ -209,7 +212,7 @@ describe("PBTSimple", () => {
     }
 
     it("should revert", async () => {
-      await expect(subject()).to.be.revertedWith("ERC721 public approve not allowed");
+      await expect(subject()).to.be.revertedWith("LSP8 public approve not allowed");
     });
   });
   /*
@@ -227,7 +230,7 @@ describe("PBTSimple", () => {
     }
 
     it("should revert", async () => {
-      await expect(subject()).to.be.revertedWith("ERC721 public setApprovalForAll not allowed");
+      await expect(subject()).to.be.revertedWith("LSP8 public setApprovalForAll not allowed");
     });
   });
   */
@@ -247,7 +250,7 @@ describe("PBTSimple", () => {
     }
 
     it("should revert", async () => {
-      await expect(subject()).to.be.revertedWith("ERC721 public transferFrom not allowed");
+      await expect(subject()).to.be.revertedWith("LSP8 public transferFrom not allowed");
     });
   });
   /*
@@ -317,7 +320,7 @@ describe("PBTSimple", () => {
     });
 
     async function subject(): Promise<any> {
-      return PBTSimple.connect(owner.wallet).testMint(subjectTo, subjectChipId, subjectErsNode, false, "0x");
+      return PBTSimple.connect(owner.wallet).testMint(subjectTo, subjectChipId, subjectErsNode, true, "0x");
     }
     /// TODO: test the LSP4Metadata
     /*
@@ -371,8 +374,8 @@ describe("PBTSimple", () => {
       chipErsNode = calculateSubnodeHash(`${chip.address}.ProjectY.gucci.ers`);
       chipErsNodeAccount = calculateSubnodeHash(`${chipAccount.address}.ProjectY.gucci.ers`);
 
-      await PBTSimple.testMint(ownerAddress, chip.address, chipErsNode, false, "0x");
-      await PBTSimple.testMint(ownerAddress, chipAccount.address, chipErsNodeAccount, false, "0x");
+      await PBTSimple.testMint(ownerAddress, chip.address, chipErsNode, true, "0x");
+      await PBTSimple.testMint(ownerAddress, chipAccount.address, chipErsNodeAccount, true, "0x");
     });
 
     describe("#transferToken", async() => {
@@ -412,7 +415,7 @@ describe("PBTSimple", () => {
           subjectSignatureFromChip,
           subjectBlockNumberUsedInSig,
           subjectPayload,
-          false,
+          true,
           "0x"
         );
       }
@@ -451,7 +454,7 @@ describe("PBTSimple", () => {
 
       it("should emit a Transfer event", async () => {
         const chipTokenId = await PBTSimple.tokenIdFor(chip.address);
-        await expect(subject()).to.emit(PBTSimple, "Transfer").withArgs(owner.address, newOwner.address, chipTokenId);
+        await expect(subject()).to.emit(PBTSimple, "Transfer").withArgs(subjectCaller.address, owner.address, newOwner.address, chipTokenId, true, "0x");
       });
 
       describe("when safeTransfer is used", async () => {
@@ -484,7 +487,8 @@ describe("PBTSimple", () => {
           const actualOwner = await PBTSimple.tokenOwnerOf(subjectTokenId);
           expect(actualOwner).to.eq(subjectCaller.address);
         });
-
+        // TODO: Use and test the LSP1Receiver
+        /*
         describe("when the receiver hasn't implemented onERC721Received", async () => {
           beforeEach(async () => {
             await network.provider.request({
@@ -519,6 +523,7 @@ describe("PBTSimple", () => {
             await expect(subject()).to.be.revertedWith("ERC721: transfer to non ERC721Receiver implementer");
           });
         });
+        */
       });
 
       describe("when the payload hasn't been signed by the chip", async () => {
@@ -755,7 +760,7 @@ describe("PBTSimple", () => {
     }
 
     it("should revert", async () => {
-      await expect(subject()).to.be.revertedWith("ERC721 public approve not allowed");
+      await expect(subject()).to.be.revertedWith("LSP8 public approve not allowed");
     });
   });
   /*

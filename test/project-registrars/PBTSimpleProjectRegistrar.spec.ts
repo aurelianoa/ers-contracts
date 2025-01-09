@@ -206,11 +206,12 @@ describe("PBTSimpleProjectRegistrar", () => {
       developerRegistrar.address,
       "ProjectY",
       "PRY",
-      "https://api.projecty.com/",
+      owner.address,
       BigNumber.from(5),
       transferPolicy.address
     );
 
+    await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerOne.address);
     await projectRegistrar.connect(owner.wallet).transferOwnership(developerOne.address);
     await projectRegistrar.connect(developerOne.wallet).acceptOwnership();
 
@@ -253,7 +254,7 @@ describe("PBTSimpleProjectRegistrar", () => {
 
   describe("#constructor", async() => {
     it("should set the state correctly", async () => {
-      const actualOwner = await projectRegistrar.owner();
+      const actualOwner = await projectRegistrar.ownerERS();
       const actualChipRegistry = await projectRegistrar.chipRegistry();
       const actualERSRegistry = await projectRegistrar.ers();
       const actualDeveloperRegistrar = await projectRegistrar.developerRegistrar();
@@ -404,7 +405,7 @@ describe("PBTSimpleProjectRegistrar", () => {
           subjectSignatureFromChip,
           subjectBlockNumberUsedInSig,
           subjectPayload,
-          false,
+          true,
           "0x"
         );
       }
@@ -438,7 +439,7 @@ describe("PBTSimpleProjectRegistrar", () => {
         fakeDeveloperRegistrar.address,
         "ProjectX",
         "PRX",
-        "https://api.projectx.com/",
+        owner.address,
         BigNumber.from(5),
         transferPolicy.address
       );

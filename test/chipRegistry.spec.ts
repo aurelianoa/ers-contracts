@@ -293,7 +293,7 @@ describe("ChipRegistry", () => {
           developerRegistrar.address,
           "ProjectX",
           "PRX",
-          "https://projectx.com/",
+          owner.address,
           BigNumber.from(5),
           ADDRESS_ZERO
         );
@@ -366,7 +366,7 @@ describe("ChipRegistry", () => {
           const simplePBT = await deployer.mocks.deployPBTSimpleMock(
             "PBTMock",
             "PBTM",
-            "https://pbtmock.com/",
+            owner.address,
             BigNumber.from(5),
             ADDRESS_ZERO
           );
@@ -432,11 +432,12 @@ describe("ChipRegistry", () => {
           developerRegistrar.address,
           "ProjectY",
           "PRY",
-          "https://projecty.com/",
+          owner.address,
           BigNumber.from(5),
           transferPolicy
         );
 
+        await projectRegistrarTwo.connect(owner.wallet).transferOwnershipERS(developerTwo.address);
         await projectRegistrarTwo.connect(owner.wallet).transferOwnership(developerTwo.address);
         await projectRegistrarTwo.connect(developerTwo.wallet).acceptOwnership();
 
@@ -641,7 +642,7 @@ describe("ChipRegistry", () => {
             developerRegistrar.address,
             "ProjectZ",
             "PRZ",
-            "https://projectz.com/",
+            owner.address,
             BigNumber.from(5),
             ADDRESS_ZERO
           );
@@ -722,7 +723,7 @@ describe("ChipRegistry", () => {
           testDeveloperRegistrar.address,
           "ProjectA",
           "PRA",
-          "https://projecta.com/",
+          owner.address,
           BigNumber.from(5),
           ADDRESS_ZERO
         );
@@ -820,7 +821,7 @@ describe("ChipRegistry", () => {
             newDeveloperRegistrar.address,
             "ProjectB",
             "PRB",
-            "https://projectb.com/",
+            owner.address,
             BigNumber.from(5),
             ADDRESS_ZERO
           );
@@ -896,6 +897,7 @@ describe("ChipRegistry", () => {
           ersRegistry.address,
           developerRegistrar.address
         );
+        await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerTwo.address);
         await projectRegistrar.connect(owner.wallet).transferOwnership(developerTwo.address);
         await projectRegistrar.connect(developerTwo.wallet).acceptOwnership();
 
@@ -988,6 +990,7 @@ describe("ChipRegistry", () => {
           ersRegistry.address,
           developerRegistrar.address
         );
+        await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerTwo.address);
         await projectRegistrar.connect(owner.wallet).transferOwnership(developerTwo.address);
         await projectRegistrar.connect(developerTwo.wallet).acceptOwnership();
 
@@ -1068,6 +1071,7 @@ describe("ChipRegistry", () => {
           ersRegistry.address,
           developerRegistrar.address
         );
+        await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerTwo.address);
         await projectRegistrar.connect(owner.wallet).transferOwnership(developerTwo.address);
         await projectRegistrar.connect(developerTwo.wallet).acceptOwnership();
 
@@ -1139,6 +1143,7 @@ describe("ChipRegistry", () => {
           ersRegistry.address,
           developerRegistrar.address
         );
+        await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerTwo.address);
         await projectRegistrar.connect(owner.wallet).transferOwnership(developerTwo.address);
         await projectRegistrar.connect(developerTwo.wallet).acceptOwnership();
 

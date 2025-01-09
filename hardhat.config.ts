@@ -30,8 +30,8 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
-      gas: 12000000,
-      blockGasLimit: 12000000,
+      gas: 1200000000,
+      blockGasLimit: 1200000000,
     },
     localhost: {
       url: "http://127.0.0.1:8545",

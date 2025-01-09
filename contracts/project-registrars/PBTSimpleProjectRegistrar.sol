@@ -137,7 +137,7 @@ contract PBTSimpleProjectRegistrar is BaseProjectRegistrar, PBTSimple {
                 chip.chipOwner,
                 chip.chipId,
                 chip.nameHash,
-                false,
+                true,
                 ""
             );
         }

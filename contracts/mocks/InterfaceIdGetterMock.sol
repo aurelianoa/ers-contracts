@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
 import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import { IERC721 } from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import { IERC721Metadata } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import { ILSP8IdentifiableDigitalAsset } from "@lukso/lsp8-contracts/contracts/ILSP8IdentifiableDigitalAsset.sol";
 
 import { IChipRegistry } from "../interfaces/IChipRegistry.sol";
 import { IPBT } from "../token/IPBT.sol";
@@ -35,5 +36,9 @@ contract InterfaceIdGetterMock {
 
     function getChipRegistryInterfaceId() external pure returns (bytes4) {
         return type(IChipRegistry).interfaceId;
+    }
+
+    function getLSP8InterfaceId() external pure returns (bytes4) {
+        return type(ILSP8IdentifiableDigitalAsset).interfaceId;
     }
 }
