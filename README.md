@@ -36,3 +36,11 @@ To use console.log during Solidity development, follow the [guides](https://hard
 OR `yarn test:clean` if contracts have been typings need to be updated
 
 Default is run on `hardhat` network. If you want to run on `localhost` use `--network localhost`
+
+### LUKSO NETWORK ADAPTATION NOTES
+
+The `ERC721ReadOnly` has been replaced with the `LSP8ReadOnly` that acts with the same manner as the NFT token linked to an NFC. The `LSP8ReadOnly` will implement any Transfer Policy as intented by the ERS Protocol.
+
+#### Important note:
+
+a Custom implementation of the Openzeppelin `Ownable` and `Ownable2Step` has been created temporary to avoid clashing with the `OwnableUnset` from the `ERC725` that is implemented on the `LSP8IdentifiableDigitalAsset` 
