@@ -41,12 +41,12 @@ const config: HardhatUserConfig = {
     },
     testnet: {
       chainId: 4201,
-      url: process.env.TESTNET_RPC_URL || '',
+      url: process.env.TESTNET_RPC || '',
       accounts: [process.env.TESTNET_DEPLOY_PRIVATE_KEY || ''],
     },
     mainnet: {
       chainId: 42,
-      url: process.env.MAINNET_RPC_URL || '',
+      url: process.env.MAINNET_RPC || '',
       accounts: [process.env.MAINNET_DEPLOY_PRIVATE_KEY || ''],
     },
   },
@@ -56,6 +56,30 @@ const config: HardhatUserConfig = {
   },
   gasReporter: {
     enabled: true,
+  },
+  etherscan: {
+    apiKey: {
+      testnet: 'no-api-key-needed',
+      mainnet: 'no-api-key-needed',
+    },
+    customChains: [
+      {
+        network: "testnet",
+        chainId: 4201,
+        urls: {
+          apiURL: "https://api.explorer.execution.testnet.lukso.network/api",
+          browserURL: "https://explorer.execution.testnet.lukso.network",
+        },
+      },
+      {
+        network: 'mainnet',
+        chainId: 42,
+        urls: {
+          apiURL: 'https://api.explorer.execution.mainnet.lukso.network/api',
+          browserURL: 'https://explorer.execution.mainnet.lukso.network',
+        },
+      },
+    ],
   },
 };
 

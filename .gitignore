@@ -17,7 +17,7 @@ coverage/
 .env
 .releaserc.json
 /docs
-
+/scripts
 /.coverage_cache
 /.coverage_contracts
 
