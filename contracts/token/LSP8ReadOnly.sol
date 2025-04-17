@@ -60,14 +60,24 @@ contract LSP8ReadOnly is LSP8IdentifiableDigitalAsset {
         address[] memory operators = new address[](1);
         return operators;
     }
-    
-    function _transfer(
+
+    function transfer(
         address,
         address,
         bytes32,
         bool,
         bytes memory
-    ) internal virtual override {
-        revert("LSP8 public transferFrom not allowed");
+    ) public virtual override {
+        revert("LSP8 public transfer not allowed");
+    }
+
+    function transferBatch(
+        address[] memory,
+        address[] memory,
+        bytes32[] memory,
+        bool[] memory,
+        bytes[] memory
+    ) public virtual override {
+        revert("LSP8 public transferBatch not allowed");
     }
 }

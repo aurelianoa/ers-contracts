@@ -250,7 +250,7 @@ describe("PBTSimple", () => {
     }
 
     it("should revert", async () => {
-      await expect(subject()).to.be.revertedWith("LSP8 public transferFrom not allowed");
+      await expect(subject()).to.be.revertedWith("LSP8 public transfer not allowed");
     });
   });
   /*
