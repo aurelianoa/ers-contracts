@@ -3,7 +3,6 @@
 pragma solidity ^0.8.24;
 
 import { IERC1271 } from "@openzeppelin/contracts/interfaces/IERC1271.sol";
-import { IERC721Receiver } from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import { ILSP1UniversalReceiver as ILSP1 } from "@lukso/lsp1-contracts/contracts/ILSP1UniversalReceiver.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 

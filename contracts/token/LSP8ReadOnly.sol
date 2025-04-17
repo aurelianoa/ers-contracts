@@ -28,8 +28,21 @@ contract LSP8ReadOnly is LSP8IdentifiableDigitalAsset {
         _LSP8_TOKENID_FORMAT_NUMBER
     ) {}
 
-    function authorizeOperator(address, bytes32, bytes memory) public virtual override {
+    function authorizeOperator(
+        address,
+        bytes32,
+        bytes memory
+    ) public virtual override {
         revert("LSP8 public approve not allowed");
+    }
+
+    function revokeOperator(
+        address,
+        bytes32,
+        bool,
+        bytes memory
+    ) public virtual override {
+        revert("LSP8 public revoke not allowed");
     }
 
     function isOperatorFor(
@@ -47,8 +60,14 @@ contract LSP8ReadOnly is LSP8IdentifiableDigitalAsset {
         address[] memory operators = new address[](1);
         return operators;
     }
-
-    function transfer(address, address, bytes32, bool, bytes memory) public virtual override {
+    
+    function _transfer(
+        address,
+        address,
+        bytes32,
+        bool,
+        bytes memory
+    ) internal virtual override {
         revert("LSP8 public transferFrom not allowed");
     }
 }

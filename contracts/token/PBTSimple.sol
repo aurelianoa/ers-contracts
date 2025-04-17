@@ -276,7 +276,7 @@ contract PBTSimple is IPBT, ERC165, LSP8ReadOnly {
      * @return bool         True if the chipId has been claimed, false otherwise
      */
     function _exists(address _chipId) internal view returns (bool) {
-        // TODO: review this logic closely; ERC721.sol will revert if the tokenId doen't exist
+        // TODO: review this logic closely; Check how the LSP8 will handle non existen tokens
         return chipIdToTokenId[_chipId] != 0x0;
     }
 }

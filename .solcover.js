@@ -5,6 +5,6 @@ module.exports = {
       'lib/StringArrayUtils.sol',
       'interfaces',
       'mocks',
-      'token/ERC721ReadOnly.sol'
+      'token/LSP8ReadOnly.sol'
     ]
   };
