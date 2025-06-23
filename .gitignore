@@ -20,7 +20,7 @@ coverage/
 /scripts
 /.coverage_cache
 /.coverage_contracts
-
+arguments.js
 ### Node ###
 
 # Logs

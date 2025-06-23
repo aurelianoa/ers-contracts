@@ -32,6 +32,10 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: false,
       gas: 1200000000,
       blockGasLimit: 1200000000,
+      forking: {
+        url: process.env.TESTNET_RPC || "",
+        blockNumber: 5354415,
+      },
     },
     localhost: {
       url: "http://127.0.0.1:8545",

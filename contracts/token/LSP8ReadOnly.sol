@@ -9,7 +9,7 @@ import {
     _LSP4_TOKEN_TYPE_NFT
 } from "@lukso/lsp4-contracts/contracts/LSP4Constants.sol";
 import {
-    _LSP8_TOKENID_FORMAT_NUMBER
+    _LSP8_TOKENID_FORMAT_UNIQUE_ID
 } from "@lukso/lsp8-contracts/contracts/LSP8Constants.sol";
 
 /**
@@ -25,7 +25,7 @@ contract LSP8ReadOnly is LSP8IdentifiableDigitalAsset {
         _symbol,
         _newOwner,
         _LSP4_TOKEN_TYPE_NFT,
-        _LSP8_TOKENID_FORMAT_NUMBER
+        _LSP8_TOKENID_FORMAT_UNIQUE_ID
     ) {}
 
     function authorizeOperator(
