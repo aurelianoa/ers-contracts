@@ -436,10 +436,7 @@ describe("ChipRegistry", () => {
           BigNumber.from(5),
           transferPolicy
         );
-
-        await projectRegistrarTwo.connect(owner.wallet).transferOwnershipERS(developerTwo.address);
         await projectRegistrarTwo.connect(owner.wallet).transferOwnership(developerTwo.address);
-        await projectRegistrarTwo.connect(developerTwo.wallet).acceptOwnership();
 
         const nameHash = calculateLabelHash("ProjectY");
 
@@ -897,9 +894,8 @@ describe("ChipRegistry", () => {
           ersRegistry.address,
           developerRegistrar.address
         );
-        await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerTwo.address);
+
         await projectRegistrar.connect(owner.wallet).transferOwnership(developerTwo.address);
-        await projectRegistrar.connect(developerTwo.wallet).acceptOwnership();
 
         const nameHash = calculateLabelHash("ProjectY");
 
@@ -990,9 +986,9 @@ describe("ChipRegistry", () => {
           ersRegistry.address,
           developerRegistrar.address
         );
-        await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerTwo.address);
+
         await projectRegistrar.connect(owner.wallet).transferOwnership(developerTwo.address);
-        await projectRegistrar.connect(developerTwo.wallet).acceptOwnership();
+
 
         const nameHash = calculateLabelHash("ProjectY");
 
@@ -1071,9 +1067,9 @@ describe("ChipRegistry", () => {
           ersRegistry.address,
           developerRegistrar.address
         );
-        await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerTwo.address);
+
         await projectRegistrar.connect(owner.wallet).transferOwnership(developerTwo.address);
-        await projectRegistrar.connect(developerTwo.wallet).acceptOwnership();
+
 
         const nameHash = calculateLabelHash("ProjectY");
 
@@ -1143,9 +1139,9 @@ describe("ChipRegistry", () => {
           ersRegistry.address,
           developerRegistrar.address
         );
-        await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerTwo.address);
+
         await projectRegistrar.connect(owner.wallet).transferOwnership(developerTwo.address);
-        await projectRegistrar.connect(developerTwo.wallet).acceptOwnership();
+
 
         const nameHash = calculateLabelHash("ProjectY");
 
