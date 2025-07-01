@@ -18,7 +18,6 @@ const expect = getWaffleExpect();
 
 describe("BaseProjectRegistrar", () => {
   let owner: Account;
-  let developerOne: Account;
   let projectManager: Account;
   let fakeDeveloperRegistrar: Account;
 
@@ -34,7 +33,6 @@ describe("BaseProjectRegistrar", () => {
     // Environment set up
     [
       owner,
-      developerOne,
       projectManager,
       chipRegistry,
       ersRegistry,
@@ -48,19 +46,14 @@ describe("BaseProjectRegistrar", () => {
       ersRegistry.address,
       fakeDeveloperRegistrar.address
     );
-
-    await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerOne.address);
-    await projectRegistrar.connect(developerOne.wallet).acceptOwnership();
   });
 
   describe("#constructor", async() => {
     it("should set the state correctly", async () => {
-      const actualOwner = await projectRegistrar.ownerERS();
       const actualChipRegistry = await projectRegistrar.chipRegistry();
       const actualERSRegistry = await projectRegistrar.ers();
       const actualDeveloperRegistrar = await projectRegistrar.developerRegistrar();
 
-      expect(actualOwner).to.eq(developerOne.address);
       expect(actualChipRegistry).to.eq(chipRegistry.address);
       expect(actualERSRegistry).to.eq(ersRegistry.address);
       expect(actualDeveloperRegistrar).to.eq(fakeDeveloperRegistrar.address);

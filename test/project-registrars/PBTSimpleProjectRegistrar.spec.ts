@@ -211,9 +211,7 @@ describe("PBTSimpleProjectRegistrar", () => {
       transferPolicy.address
     );
 
-    await projectRegistrar.connect(owner.wallet).transferOwnershipERS(developerOne.address);
     await projectRegistrar.connect(owner.wallet).transferOwnership(developerOne.address);
-    await projectRegistrar.connect(developerOne.wallet).acceptOwnership();
 
     // 15. Create example service for project
 
@@ -254,7 +252,7 @@ describe("PBTSimpleProjectRegistrar", () => {
 
   describe("#constructor", async() => {
     it("should set the state correctly", async () => {
-      const actualOwner = await projectRegistrar.ownerERS();
+      const actualOwner = await projectRegistrar.owner();
       const actualChipRegistry = await projectRegistrar.chipRegistry();
       const actualERSRegistry = await projectRegistrar.ers();
       const actualDeveloperRegistrar = await projectRegistrar.developerRegistrar();

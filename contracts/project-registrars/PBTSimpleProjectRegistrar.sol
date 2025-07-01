@@ -1,14 +1,12 @@
 //SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.24;
-
 import { BaseProjectRegistrar } from "./BaseProjectRegistrar.sol";
 import { ChipValidations } from "../lib/ChipValidations.sol";
 import { IChipRegistry } from "../interfaces/IChipRegistry.sol";
 import { IERS } from "../interfaces/IERS.sol";
 import { IProjectRegistrar } from "../interfaces/IProjectRegistrar.sol";
 import { IDeveloperRegistrar } from "../interfaces/IDeveloperRegistrar.sol";
-
 import { PBTSimple } from "../token/PBTSimple.sol";
 import { IPBT } from "../token/IPBT.sol";
 import { ITransferPolicy } from "../interfaces/ITransferPolicy.sol";
@@ -68,7 +66,7 @@ contract PBTSimpleProjectRegistrar is BaseProjectRegistrar, PBTSimple {
         ITransferPolicy _newPolicy
     )
         public
-        onlyOwnerERS()
+        onlyOwner()
     {
         _setTransferPolicy(_newPolicy);
     }
@@ -122,7 +120,7 @@ contract PBTSimpleProjectRegistrar is BaseProjectRegistrar, PBTSimple {
         ProjectChipAddition[] calldata _chips
     ) 
         external
-        onlyOwnerERS()
+        onlyOwner()
     {
         for (uint256 i = 0; i < _chips.length; i++) {
             ProjectChipAddition memory chip = _chips[i];
